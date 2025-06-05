@@ -86,21 +86,34 @@ const loginUsuarios = async (req, res = response) => {
     }
 }
 
-const renewToken = async(req, res = response) => {
-
+const renewToken = async (req, res = response) => {
+  try {
     const uid = req.uid;
 
-    const token = await generarJWT();
+    const token = await generarJWT(uid); // ✅ pasar el UID
 
     const usuario = await Usuario.findById(uid);
 
-    res.json({
-            ok: true,
-            usuario,
-            token
-        });
+    if (!usuario) {
+      return res.status(401).json({
+        ok: false,
+        msg: 'Token inválido - usuario no existe'
+      });
+    }
 
-}
+    res.json({
+      ok: true,
+      usuario,
+      token
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: 'Error al renovar token'
+    });
+  }
+};
 
 module.exports = {
     crearUsuarios,
